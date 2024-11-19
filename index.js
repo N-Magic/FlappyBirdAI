@@ -7,11 +7,11 @@ ctx.drawImage(birdPic, 20, 0, 60, 50);
 var totalBirds = 100;
 var gravity = 0.5;
 var flap_stregth = 10;
-let birdsAlive = 0
-var mutation = 0.0001
+let birdsAlive = 0;
+var mutation = 0.0001; // Max value of 2 - will make every bird random every round
 
 class weights {
-  constructor(l1,l2,l3,l4,l5,l6,l7,l8) {
+  constructor(l1, l2, l3, l4, l5, l6, l7, l8) {
     this.l1 = l1;
     this.l2 = l2;
     this.l3 = l3;
@@ -26,49 +26,65 @@ class weights {
 class bird {
   constructor(height, vel, weights, score, life) {
     this.height = height;
-    this.speed = vel;
-    this.weights = weights
+    this.vel = vel;
+    this.weights = weights;
     this.score = score;
     this.life = life;
   }
 
   jump() {
-    this.speed = flap_stregth;
+    this.vel = flap_stregth;
   }
 }
 
 let birds = [];
 for (i = 0; i < totalBirds; i++) {}
 
-bestBird = new bird(50, 0, weights(0,0,0,0,0,0,0,0), 0, true);
-secondBird = new bird(50, 0, weights(0,0,0,0,0,0,0,0), 0, true);
-thirdBird = new bird(50, 0, weights(0,0,0,0,0,0,0,0), 0, true);
-
+// Could be switched to save multiple birds weights in an array
+bestWeights = new weights(0, 0, 0, 0, 0, 0, 0, 0);
 
 birds = new Array[bird]();
 
-
 function startRound() {
   for (i = 0; i < totalBirds; i++) {
-    birds.add(bird(50, 0, tweakWeights(bestBird.weights), 0, true));
+    birds.add(bird(50, 0, tweakWeights(bestWeights), 0, true));
   }
-  birdsAlive = totalBirds
+  birdsAlive = totalBirds;
+  gameLoop();
 }
 
 function tweakWeights(weights) {
-  weights.l1 += (Math.random() - 0.5) * mutation
-  weights.l2 += (Math.random() - 0.5) * mutation
-  weights.l3 += (Math.random() - 0.5) * mutation
-  weights.l4 += (Math.random() - 0.5) * mutation
-  weights.l5 += (Math.random() - 0.5) * mutation
-  weights.l6 += (Math.random() - 0.5) * mutation
-  weights.l7 += (Math.random() - 0.5) * mutation
-  weights.l8 += (Math.random() - 0.5) * mutation
-  return
+  weights.l1 += (Math.random() - 0.5) * mutation;
+  weights.l2 += (Math.random() - 0.5) * mutation;
+  weights.l3 += (Math.random() - 0.5) * mutation;
+  weights.l4 += (Math.random() - 0.5) * mutation;
+  weights.l5 += (Math.random() - 0.5) * mutation;
+  weights.l6 += (Math.random() - 0.5) * mutation;
+  weights.l7 += (Math.random() - 0.5) * mutation;
+  weights.l8 += (Math.random() - 0.5) * mutation;
 }
 
-function gameLoop
+function gameLoop() {
+  for (birdy in birds) {
+    if (birdy.life == true) {
+      // TODO Code for bird each turn
+    }
+  }
 
-function evaluateNetwork(l1,l2,l3,l4,l5,l6,l7,l8) {
+  if (birdsAlive > 0) {
+    requestAnimationFrame(gameLoop);
+  } else {
+    for (birdy in birds) {
+      var bestScore = 0;
+      if (birdy.score > bestScore) {
+        bestScore = birdy.score;
+        bestWeights = birdy.weights;
+      }
+    }
+    startRound();
+  } // This code will either keep the game running, or save best weights, and then starts a new round
+}
 
+function evaluateNetwork(bird, pipePair) {
+  // TODO Code to determine if the bird will flap
 }
