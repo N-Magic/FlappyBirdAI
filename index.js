@@ -4,6 +4,8 @@ var birdPic = new Image();
 birdPic.src = "./bird.png";
 ctx.drawImage(birdPic, 20, 0, 60, 50);
 
+var pipeWidth = 100;
+var pipeSpacing = 600;
 var totalBirds = 100;
 var gravity = 0.5;
 var flap_stregth = 10;
@@ -37,6 +39,14 @@ class bird {
   }
 }
 
+class pipePair {
+  constructor(horizontal, top, bottom) {
+    this.horizontal = horizontal;
+    this.top = top;
+    this.bottom = bottom;
+  }
+}
+
 let birds = [];
 for (i = 0; i < totalBirds; i++) {}
 
@@ -67,7 +77,9 @@ function tweakWeights(weights) {
 function gameLoop() {
   for (birdy in birds) {
     if (birdy.life == true) {
-      // TODO Code for bird each turn
+      if (evalutateNetwork(birdy) == true) {
+        birdy.jump();
+      }
     }
   }
 
@@ -87,4 +99,6 @@ function gameLoop() {
 
 function evaluateNetwork(bird, pipePair) {
   // TODO Code to determine if the bird will flap
+  //
+  return jump;
 }
