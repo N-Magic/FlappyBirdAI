@@ -5,18 +5,18 @@ var birdPic = new Image();
 birdPic.src = "./bird.png";
 // ctx.drawImage(birdPic, 20, 0, 60, 50);
 
-var gravity = 0.08;
-var flap_stregth = -4;
+var gravity = 0.26;
+var flap_stregth = -7;
 
 var numberOfPipes = 4;
 var pipeWidth = 100;
-var pipeSpacing = 400;
-var pipeSpeed = 2;
+var pipeSpacing = 600;
+var pipeSpeed = 5;
 var pipeGap = 300;
 
-var totalBirds = 10000;
+var totalBirds = 2500;
 let birdsAlive = 0;
-var mutation = 0.005; // Max value of 2 - will make every bird random every round
+var mutation = 0.0025; // Max value of 2 - will make every bird random every round
 
 var bestScore = 0;
 let frame = 0;
@@ -61,9 +61,9 @@ class bird {
 }
 
 class pipePair {
-  constructor(horizontal, bottom) {
+  constructor(horizontal, bottomHeight) {
     this.horizontal = horizontal;
-    this.bottom = bottom;
+    this.bottomHeight = bottomHeight;
   }
 }
 
@@ -104,7 +104,7 @@ function gameLoop() {
   for (let pipePair of pipePairs) {
     pipePair.horizontal -= pipeSpeed;
     let theDistance = pipePair.horizontal;
-    let theHeight = pipePair.bottom;
+    let theHeight = pipePair.bottomHeight;
     ctx.fillStyle = "green";
     ctx.fillRect(theDistance, theHeight, pipeWidth, 600); // Assuming pipeWidth is defined elsewhere
     ctx.fillRect(theDistance, -800 - pipeGap + theHeight, pipeWidth, 800);
@@ -124,13 +124,14 @@ function gameLoop() {
 
   for (let bird of birds) {
     if (bird.life == true) {
+      // console.log(bird.height + " " + pipePairs[0].bottom);
       if (
         bird.height < 0 ||
-        bird.height > 800 ||
+        bird.height + 50 > 800 ||
         (pipePairs[0].horizontal < pipeWidth - 10 &&
-          bird.height + 50 > pipePairs[0].bottom) ||
+          pipePairs[0].bottomHeight < bird.height + 50) ||
         (pipePairs[0].horizontal < pipeWidth - 10 &&
-          bird.height > pipePairs[0].bottom + pipeGap - 25)
+          bird.height < pipePairs[0].bottomHeight - pipeGap)
       ) {
         bird.life = false;
         birdsAlive -= 1;
@@ -158,7 +159,7 @@ function gameLoop() {
 
   frame++;
 
-  if (frame % 10 == 0) console.log(birds[0].vel);
+  // if (frame % 10 == 0) console.log(birds[0].vel);
 }
 
 function evaluateNetwork(bird, pipePair) {
@@ -167,7 +168,7 @@ function evaluateNetwork(bird, pipePair) {
     node1 = 100;
   }
 
-  let node2 = bird.height - pipePair.bottom;
+  let node2 = bird.height - pipePair.bottomHeight;
   let node3 = bird.vel;
   // Node 1 is set to only be positive, and the distance from the pipe
   // Node 2 is the difference in heights
