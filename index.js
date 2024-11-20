@@ -5,17 +5,20 @@ birdPic.src = "./bird.png";
 // ctx.drawImage(birdPic, 20, 0, 60, 50);
 
 var gravity = 0.08;
-var flap_stregth = 10;
+var flap_stregth = -6;
 
+var numberOfPipes = 6;
 var pipeWidth = 100;
-var pipeSpacing = 200;
-var pipeSpeed = 10;
+var pipeSpacing = 400;
+var pipeSpeed = 2;
 
 var totalBirds = 100;
 let birdsAlive = 0;
 var mutation = 0.0001; // Max value of 2 - will make every bird random every round
 
-class weights {
+var bestScore = 0;
+
+class WeightSet {
   constructor(l1, l2, l3, l4, l5, l6, l7, l8) {
     this.l1 = l1;
     this.l2 = l2;
@@ -25,6 +28,18 @@ class weights {
     this.l6 = l6;
     this.l7 = l7;
     this.l8 = l8;
+  }
+  clone() {
+    return new WeightSet(
+      this.l1,
+      this.l2,
+      this.l3,
+      this.l4,
+      this.l5,
+      this.l6,
+      this.l7,
+      this.l8,
+    );
   }
 }
 
@@ -53,7 +68,7 @@ let birds = [];
 let pipePairs = [];
 
 // Could be switched to save multiple birds weights in an array
-bestWeights = new weights(0, 0, 0, 0, 0, 0, 0, 0);
+let bestWeights = new WeightSet(0, 0, 0, 0, 0, 0, 0, 0);
 
 function startRound() {
   pipePairs.push(new pipePair(600, 800 - Math.random() * 600));
@@ -65,37 +80,49 @@ function startRound() {
 }
 
 function tweakWeights(weights) {
-  weights.l1 += (Math.random() - 0.5) * mutation;
-  weights.l2 += (Math.random() - 0.5) * mutation;
-  weights.l3 += (Math.random() - 0.5) * mutation;
-  weights.l4 += (Math.random() - 0.5) * mutation;
-  weights.l5 += (Math.random() - 0.5) * mutation;
-  weights.l6 += (Math.random() - 0.5) * mutation;
-  weights.l7 += (Math.random() - 0.5) * mutation;
-  weights.l8 += (Math.random() - 0.5) * mutation;
+  let newWeights = weights.clone();
+  newWeights.l1 += (Math.random() - 0.5) * mutation;
+  newWeights.l2 += (Math.random() - 0.5) * mutation;
+  newWeights.l3 += (Math.random() - 0.5) * mutation;
+  newWeights.l4 += (Math.random() - 0.5) * mutation;
+  newWeights.l5 += (Math.random() - 0.5) * mutation;
+  newWeights.l6 += (Math.random() - 0.5) * mutation;
+  newWeights.l7 += (Math.random() - 0.5) * mutation;
+  newWeights.l8 += (Math.random() - 0.5) * mutation;
+  return newWeights;
 }
 
 function gameLoop() {
   ctx.clearRect(0, 0, screen.width, screen.height);
-  while (pipePairs.length < 3) {
+  while (pipePairs.length < numberOfPipes) {
     nextPos = pipePairs[pipePairs.length - 1].horizontal + pipeSpacing;
     pipePairs.push(new pipePair(nextPos, 800 - Math.random() * 600));
   }
 
   for (let pipePair of pipePairs) {
+    pipePair.horizontal -= pipeSpeed;
     let theDistance = pipePair.horizontal;
     let theHeight = pipePair.bottom;
     ctx.fillStyle = "green";
     ctx.fillRect(theDistance, theHeight, pipeWidth, 600); // Assuming pipeWidth is defined elsewhere
   }
 
+  if (pipePairs[0].horizontal < -100) {
+    pipePairs.shift();
+  }
+
   // console.log("starting to loop through the birds");
 
   for (let bird of birds) {
     if (bird.life == true) {
+      if (bird.height < 0 || bird.height > 800) {
+        bird.life = false;
+        birdsAlive -= 1;
+      }
+      bird.score += 1;
       bird.vel += gravity;
       bird.height += bird.vel;
-      if (evaluateNetwork(bird) == true) {
+      if (evaluateNetwork(bird, pipePairs[0]) == true) {
         bird.jump();
       }
       ctx.drawImage(birdPic, 20, bird.height, 60, 50);
@@ -103,12 +130,10 @@ function gameLoop() {
   }
 
   // console.log("ending the loop through the birds");
-
   if (birdsAlive > 0) {
     requestAnimationFrame(gameLoop);
   } else {
     for (let bird of birds) {
-      var bestScore = 0;
       if (bird.score > bestScore) {
         bestScore = bird.score;
         bestWeights = bird.weights;
@@ -119,9 +144,25 @@ function gameLoop() {
 }
 
 function evaluateNetwork(bird, pipePair) {
-  let jump = false;
+  let node1 = pipePair.horizontal - 80;
+  if (node1 < 0) {
+    node1 = 0;
+  }
 
-  return jump;
+  let node2 = bird.height - pipePair.bottom;
+  let node3 = bird.vel;
+  // Node 1 is set to only be positive, and the distance from the pipe
+  // Node 2 is the difference in heights
+  // Node 3 is the birds velocity
+  let node4 =
+    node1 * bird.weights.l1 + node2 * bird.weights.l2 + node3 * bird.weights.l3;
+  let node5 =
+    node1 * bird.weights.l4 + node2 * bird.weights.l5 + node3 * bird.weights.l6;
+  let node6 = node4 * bird.weights.l7 + node5 * bird.weights.l8;
+  if (node6 >= 0) {
+    return true;
+  }
+  return false;
 }
 
 startRound();
