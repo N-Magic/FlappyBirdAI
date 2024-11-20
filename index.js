@@ -1,22 +1,25 @@
 var screen = document.getElementById("gamePlay");
+var display = document.getElementById("dataDisplay");
 var ctx = screen.getContext("2d");
 var birdPic = new Image();
 birdPic.src = "./bird.png";
 // ctx.drawImage(birdPic, 20, 0, 60, 50);
 
 var gravity = 0.08;
-var flap_stregth = -6;
+var flap_stregth = -4;
 
-var numberOfPipes = 3;
+var numberOfPipes = 4;
 var pipeWidth = 100;
 var pipeSpacing = 400;
 var pipeSpeed = 2;
+var pipeGap = 300;
 
-var totalBirds = 100;
+var totalBirds = 10000;
 let birdsAlive = 0;
-var mutation = 0.0001; // Max value of 2 - will make every bird random every round
+var mutation = 0.005; // Max value of 2 - will make every bird random every round
 
 var bestScore = 0;
+let frame = 0;
 
 class WeightSet {
   constructor(l1, l2, l3, l4, l5, l6, l7, l8) {
@@ -94,6 +97,7 @@ function tweakWeights(weights) {
 }
 
 function gameLoop() {
+  display.innerText = bestScore;
   ctx.clearRect(0, 0, screen.width, screen.height);
 
   let farthestPipeSpot = 0;
@@ -103,6 +107,7 @@ function gameLoop() {
     let theHeight = pipePair.bottom;
     ctx.fillStyle = "green";
     ctx.fillRect(theDistance, theHeight, pipeWidth, 600); // Assuming pipeWidth is defined elsewhere
+    ctx.fillRect(theDistance, -800 - pipeGap + theHeight, pipeWidth, 800);
     if (pipePair.horizontal >= farthestPipeSpot) {
       farthestPipeSpot = pipePair.horizontal;
     }
@@ -113,19 +118,19 @@ function gameLoop() {
     pipePairs.push(new pipePair(nextPipe, 800 - Math.random() * 600));
   }
 
-  if (pipePairs[0].horizontal < 0) {
+  if (pipePairs[0].horizontal < -pipeWidth) {
     pipePairs.shift();
-    console.log(pipePairs);
   }
-
-  // console.log("starting to loop through the birds");
 
   for (let bird of birds) {
     if (bird.life == true) {
       if (
         bird.height < 0 ||
         bird.height > 800 ||
-        bird.height > pipePairs[0].bottom
+        (pipePairs[0].horizontal < pipeWidth - 10 &&
+          bird.height + 50 > pipePairs[0].bottom) ||
+        (pipePairs[0].horizontal < pipeWidth - 10 &&
+          bird.height > pipePairs[0].bottom + pipeGap - 25)
       ) {
         bird.life = false;
         birdsAlive -= 1;
@@ -139,8 +144,6 @@ function gameLoop() {
       ctx.drawImage(birdPic, 20, bird.height, 60, 50);
     }
   }
-
-  // console.log("ending the loop through the birds");
   if (birdsAlive > 0) {
     requestAnimationFrame(gameLoop);
   } else {
@@ -152,12 +155,16 @@ function gameLoop() {
     }
     startRound();
   } // This code will either keep the game running, or save best weights, and then starts a new round
+
+  frame++;
+
+  if (frame % 10 == 0) console.log(birds[0].vel);
 }
 
 function evaluateNetwork(bird, pipePair) {
   let node1 = pipePair.horizontal - 80;
-  if (node1 < 0) {
-    node1 = 0;
+  if (node1 < 100) {
+    node1 = 100;
   }
 
   let node2 = bird.height - pipePair.bottom;
