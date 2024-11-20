@@ -2,13 +2,16 @@ var screen = document.getElementById("gamePlay");
 var ctx = screen.getContext("2d");
 var birdPic = new Image();
 birdPic.src = "./bird.png";
-ctx.drawImage(birdPic, 20, 0, 60, 50);
+// ctx.drawImage(birdPic, 20, 0, 60, 50);
+
+var gravity = 0.08;
+var flap_stregth = 10;
 
 var pipeWidth = 100;
-var pipeSpacing = 600;
+var pipeSpacing = 200;
+var pipeSpeed = 10;
+
 var totalBirds = 100;
-var gravity = 0.5;
-var flap_stregth = 10;
 let birdsAlive = 0;
 var mutation = 0.0001; // Max value of 2 - will make every bird random every round
 
@@ -40,24 +43,22 @@ class bird {
 }
 
 class pipePair {
-  constructor(horizontal, top, bottom) {
+  constructor(horizontal, bottom) {
     this.horizontal = horizontal;
-    this.top = top;
     this.bottom = bottom;
   }
 }
 
 let birds = [];
-for (i = 0; i < totalBirds; i++) {}
+let pipePairs = [];
 
 // Could be switched to save multiple birds weights in an array
 bestWeights = new weights(0, 0, 0, 0, 0, 0, 0, 0);
 
-birds = new Array[bird]();
-
 function startRound() {
+  pipePairs.push(new pipePair(600, 800 - Math.random() * 600));
   for (i = 0; i < totalBirds; i++) {
-    birds.add(bird(50, 0, tweakWeights(bestWeights), 0, true));
+    birds.push(new bird(50, 0, tweakWeights(bestWeights), 0, true));
   }
   birdsAlive = totalBirds;
   gameLoop();
@@ -75,22 +76,42 @@ function tweakWeights(weights) {
 }
 
 function gameLoop() {
-  for (birdy in birds) {
-    if (birdy.life == true) {
-      if (evalutateNetwork(birdy) == true) {
-        birdy.jump();
+  ctx.clearRect(0, 0, screen.width, screen.height);
+  while (pipePairs.length < 3) {
+    nextPos = pipePairs[pipePairs.length - 1].horizontal + pipeSpacing;
+    pipePairs.push(new pipePair(nextPos, 800 - Math.random() * 600));
+  }
+
+  for (let pipePair of pipePairs) {
+    let theDistance = pipePair.horizontal;
+    let theHeight = pipePair.bottom;
+    ctx.fillStyle = "green";
+    ctx.fillRect(theDistance, theHeight, pipeWidth, 600); // Assuming pipeWidth is defined elsewhere
+  }
+
+  // console.log("starting to loop through the birds");
+
+  for (let bird of birds) {
+    if (bird.life == true) {
+      bird.vel += gravity;
+      bird.height += bird.vel;
+      if (evaluateNetwork(bird) == true) {
+        bird.jump();
       }
+      ctx.drawImage(birdPic, 20, bird.height, 60, 50);
     }
   }
+
+  // console.log("ending the loop through the birds");
 
   if (birdsAlive > 0) {
     requestAnimationFrame(gameLoop);
   } else {
-    for (birdy in birds) {
+    for (let bird of birds) {
       var bestScore = 0;
-      if (birdy.score > bestScore) {
-        bestScore = birdy.score;
-        bestWeights = birdy.weights;
+      if (bird.score > bestScore) {
+        bestScore = bird.score;
+        bestWeights = bird.weights;
       }
     }
     startRound();
@@ -98,7 +119,9 @@ function gameLoop() {
 }
 
 function evaluateNetwork(bird, pipePair) {
-  // TODO Code to determine if the bird will flap
-  //
+  let jump = false;
+
   return jump;
 }
+
+startRound();
