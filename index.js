@@ -3,20 +3,26 @@ var display = document.getElementById("dataDisplay");
 var ctx = screen.getContext("2d");
 var birdPic = new Image();
 birdPic.src = "./bird.png";
+var backgroundPic = new Image();
+backgroundPic.src = "./background.png";
+var topPipePic = new Image();
+topPipePic.src = "./top_pipe.png";
+var bottomPipePic = new Image();
+bottomPipePic.src = "./bottom_pipe.png";
 // ctx.drawImage(birdPic, 20, 0, 60, 50);
 
-var gravity = 0.28;
-var flap_stregth = -7;
+var gravity = 0.09;
+var flap_stregth = -4;
 
 var numberOfPipes = 4;
-var pipeWidth = 100;
-var pipeSpacing = 600;
-var pipeSpeed = 6;
-var pipeGap = 300;
+var pipeWidth = 75;
+var pipeSpacing = 450;
+var pipeSpeed = 2.75;
+var pipeGap = 150;
 
-var totalBirds = 5000;
+var totalBirds = 1000;
 let birdsAlive = 0;
-var mutation = 0.005; // Max value of 2 - will make every bird random every round
+var mutation = 0.001; // Max value of 2 - will make every bird random every round
 
 var bestScore = 0;
 let frame = 0;
@@ -61,9 +67,9 @@ class bird {
 }
 
 class pipePair {
-  constructor(horizontal, bottomHeight) {
+  constructor(horizontal, bottom) {
     this.horizontal = horizontal;
-    this.bottomHeight = bottomHeight;
+    this.bottom = bottom;
   }
 }
 
@@ -77,7 +83,7 @@ function startRound() {
   pipePairs = [];
   pipePairs.push(new pipePair(600, 800 - Math.random() * 600));
   for (i = 0; i < totalBirds; i++) {
-    birds.push(new bird(50, 0, tweakWeights(bestWeights), 0, true));
+    birds.push(new bird(screen.height / 2, 0, tweakWeights(bestWeights), 0, true));
   }
   birdsAlive = totalBirds;
   gameLoop();
@@ -97,17 +103,17 @@ function tweakWeights(weights) {
 }
 
 function gameLoop() {
-  display.innerText = bestScore;
-  ctx.clearRect(0, 0, screen.width, screen.height);
+  display.innerText = `Best score: ${bestScore}`;
+  // ctx.clearRect(0, 0, screen.width, screen.height);
+  ctx.drawImage(backgroundPic, 0, 0, screen.width, screen.height);
 
   let farthestPipeSpot = 0;
   for (let pipePair of pipePairs) {
     pipePair.horizontal -= pipeSpeed;
     let theDistance = pipePair.horizontal;
-    let theHeight = pipePair.bottomHeight;
-    ctx.fillStyle = "green";
-    ctx.fillRect(theDistance, theHeight, pipeWidth, 600); // Assuming pipeWidth is defined elsewhere
-    ctx.fillRect(theDistance, -800 - pipeGap + theHeight, pipeWidth, 800);
+    let theHeight = pipePair.bottom;
+    ctx.drawImage(topPipePic, theDistance - 121, -1000 - pipeGap + theHeight, pipeWidth * 4.1, 1000);
+    ctx.drawImage(bottomPipePic, theDistance - 117, theHeight, pipeWidth * 4.1, 1000);
     if (pipePair.horizontal >= farthestPipeSpot) {
       farthestPipeSpot = pipePair.horizontal;
     }
@@ -124,14 +130,15 @@ function gameLoop() {
 
   for (let bird of birds) {
     if (bird.life == true) {
-      // console.log(bird.height + " " + pipePairs[0].bottom);
       if (
         bird.height < 0 ||
-        bird.height + 50 > 800 ||
+        bird.height > 800 ||
         (pipePairs[0].horizontal < pipeWidth - 10 &&
-          pipePairs[0].bottomHeight < bird.height + 50) ||
+          bird.height + 50 > pipePairs[0].bottom) ||
         (pipePairs[0].horizontal < pipeWidth - 10 &&
-          bird.height < pipePairs[0].bottomHeight - pipeGap)
+          bird.height > pipePairs[0].bottom + pipeGap - 25) ||
+        (pipePairs[0].horizontal < pipeWidth - 10 &&
+          bird.height < pipePairs[0].bottom - pipeGap - 10)
       ) {
         bird.life = false;
         birdsAlive -= 1;
@@ -142,8 +149,12 @@ function gameLoop() {
       if (evaluateNetwork(bird, pipePairs[0]) == true) {
         bird.jump();
       }
-
-      ctx.drawImage(birdPic, 20, bird.height, 60, 50);
+      const rotateAngle = Math.PI * 1.45 + (bird.vel + 10) / 7.5; // messed around with values til it looked good
+      ctx.save();
+      ctx.translate(35, bird.height + 25);
+      ctx.rotate(rotateAngle);
+      ctx.drawImage(birdPic, -30, -25, 60, 50);
+      ctx.restore();
     }
   }
   if (birdsAlive > 0) {
@@ -160,16 +171,19 @@ function gameLoop() {
 
   frame++;
 
-  // if (frame % 10 == 0) console.log(birds[0].vel);
+  ctx.fillStyle = "#fff";
+  ctx.font = "18px Arial";
+
+  ctx.fillText(`Birds alive: ${birdsAlive}`, 10, 25);
 }
 
 function evaluateNetwork(bird, pipePair) {
   let node1 = pipePair.horizontal - 80;
-  if (node1 < 50) {
-    node1 = 50;
+  if (node1 < 100) {
+    node1 = 100;
   }
 
-  let node2 = bird.height - pipePair.bottomHeight;
+  let node2 = bird.height - pipePair.bottom;
   let node3 = bird.vel;
   // Node 1 is set to only be positive, and the distance from the pipe
   // Node 2 is the difference in heights
