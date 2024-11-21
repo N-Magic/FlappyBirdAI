@@ -5,18 +5,18 @@ var birdPic = new Image();
 birdPic.src = "./bird.png";
 // ctx.drawImage(birdPic, 20, 0, 60, 50);
 
-var gravity = 0.26;
+var gravity = 0.28;
 var flap_stregth = -7;
 
 var numberOfPipes = 4;
 var pipeWidth = 100;
 var pipeSpacing = 600;
-var pipeSpeed = 5;
+var pipeSpeed = 6;
 var pipeGap = 300;
 
-var totalBirds = 2500;
+var totalBirds = 5000;
 let birdsAlive = 0;
-var mutation = 0.0025; // Max value of 2 - will make every bird random every round
+var mutation = 0.005; // Max value of 2 - will make every bird random every round
 
 var bestScore = 0;
 let frame = 0;
@@ -142,6 +142,7 @@ function gameLoop() {
       if (evaluateNetwork(bird, pipePairs[0]) == true) {
         bird.jump();
       }
+
       ctx.drawImage(birdPic, 20, bird.height, 60, 50);
     }
   }
@@ -164,8 +165,8 @@ function gameLoop() {
 
 function evaluateNetwork(bird, pipePair) {
   let node1 = pipePair.horizontal - 80;
-  if (node1 < 100) {
-    node1 = 100;
+  if (node1 < 50) {
+    node1 = 50;
   }
 
   let node2 = bird.height - pipePair.bottomHeight;
