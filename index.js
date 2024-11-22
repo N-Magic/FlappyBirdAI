@@ -12,7 +12,7 @@ var numberOfPipes = 4;
 var pipeWidth = 100;
 var pipeSpacing = 600;
 var pipeSpeed = 6;
-var pipeGap = 300;
+var pipeGap = 250;
 
 var totalBirds = 5000;
 let birdsAlive = 0;
@@ -183,6 +183,11 @@ function evaluateNetwork(bird, pipePair) {
     return true;
   }
   return false;
+}
+
+function killThemAll() {
+  birds = [];
+  birdsAlive = 0;
 }
 
 startRound();
