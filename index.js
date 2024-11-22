@@ -11,18 +11,18 @@ var bottomPipePic = new Image();
 bottomPipePic.src = "./bottom_pipe.png";
 // ctx.drawImage(birdPic, 20, 0, 60, 50);
 
-var gravity = 0.09;
-var flap_stregth = -4;
+var gravity = 0.26;
+var flap_stregth = -6;
 
-var numberOfPipes = 4;
-var pipeWidth = 75;
+var numberOfPipes = 6;
+var pipeWidth = 100;
 var pipeSpacing = 450;
-var pipeSpeed = 2.75;
-var pipeGap = 150;
+var pipeSpeed = 5;
+var pipeGap = 200;
 
-var totalBirds = 1000;
+var totalBirds = 2500;
 let birdsAlive = 0;
-var mutation = 0.001; // Max value of 2 - will make every bird random every round
+var mutation = 0.005; // Max value of 2 - will make every bird random every round
 
 var bestScore = 0;
 let frame = 0;
@@ -83,7 +83,9 @@ function startRound() {
   pipePairs = [];
   pipePairs.push(new pipePair(600, 800 - Math.random() * 600));
   for (i = 0; i < totalBirds; i++) {
-    birds.push(new bird(screen.height / 2, 0, tweakWeights(bestWeights), 0, true));
+    birds.push(
+      new bird(screen.height / 2, 0, tweakWeights(bestWeights), 0, true),
+    );
   }
   birdsAlive = totalBirds;
   gameLoop();
@@ -112,8 +114,20 @@ function gameLoop() {
     pipePair.horizontal -= pipeSpeed;
     let theDistance = pipePair.horizontal;
     let theHeight = pipePair.bottom;
-    ctx.drawImage(topPipePic, theDistance - 121, -1000 - pipeGap + theHeight, pipeWidth * 4.1, 1000);
-    ctx.drawImage(bottomPipePic, theDistance - 117, theHeight, pipeWidth * 4.1, 1000);
+    ctx.drawImage(
+      topPipePic,
+      theDistance - 121,
+      -1000 - pipeGap + theHeight,
+      pipeWidth * 4.1,
+      1000,
+    );
+    ctx.drawImage(
+      bottomPipePic,
+      theDistance - 117,
+      theHeight,
+      pipeWidth * 4.1,
+      1000,
+    );
     if (pipePair.horizontal >= farthestPipeSpot) {
       farthestPipeSpot = pipePair.horizontal;
     }
