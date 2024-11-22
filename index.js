@@ -12,17 +12,27 @@ bottomPipePic.src = "./bottom_pipe.png";
 // ctx.drawImage(birdPic, 20, 0, 60, 50);
 
 var gravity = 0.26;
+<<<<<<< HEAD
 var flap_stregth = -6;
+=======
+var flap_stregth = -7;
+>>>>>>> parent of a3396ca (made the game harder for the birds)
 
 var numberOfPipes = 6;
 var pipeWidth = 100;
+<<<<<<< HEAD
 var pipeSpacing = 450;
 var pipeSpeed = 5;
 var pipeGap = 200;
+=======
+var pipeSpacing = 600;
+var pipeSpeed = 5;
+var pipeGap = 300;
+>>>>>>> parent of a3396ca (made the game harder for the birds)
 
 var totalBirds = 2500;
 let birdsAlive = 0;
-var mutation = 0.005; // Max value of 2 - will make every bird random every round
+var mutation = 0.0025; // Max value of 2 - will make every bird random every round
 
 var bestScore = 0;
 let frame = 0;
@@ -163,12 +173,16 @@ function gameLoop() {
       if (evaluateNetwork(bird, pipePairs[0]) == true) {
         bird.jump();
       }
+<<<<<<< HEAD
       const rotateAngle = Math.PI * 1.45 + (bird.vel + 10) / 7.5; // messed around with values til it looked good
       ctx.save();
       ctx.translate(35, bird.height + 25);
       ctx.rotate(rotateAngle);
       ctx.drawImage(birdPic, -30, -25, 60, 50);
       ctx.restore();
+=======
+      ctx.drawImage(birdPic, 20, bird.height, 60, 50);
+>>>>>>> parent of a3396ca (made the game harder for the birds)
     }
   }
   if (birdsAlive > 0) {
